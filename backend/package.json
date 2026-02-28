@@ -1,0 +1,28 @@
+{
+  "name": "nodesend",
+  "version": "1.0.0",
+  "description": "Sending Mail via Node",
+  "license": "ISC",
+  "author": "Ishan",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "npx tsc -b && node dist/index.js",
+    "upload": "npx tsc -b && node dist/supabase/bucket/upload.js",
+    "watch": "node dist/mail/watch.js"
+  },
+  "dependencies": {
+    "@google-cloud/pubsub": "^5.3.0",
+    "@supabase/supabase-js": "^2.98.0",
+    "@types/express": "^5.0.6",
+    "axios": "^1.13.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "googleapis": "^171.4.0",
+    "nodemailer": "^8.0.1"
+  },
+  "devDependencies": {
+    "@types/nodemailer": "^7.0.11"
+  }
+}

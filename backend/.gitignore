@@ -29,7 +29,7 @@ npm-debug.log*
 Thumbs.db
 
 # Secrets & credentials
-*.json
+mailer-*.json
 secrets/
 
 # Test coverage
@@ -39,5 +39,3 @@ coverage/
 tmp/
 temp/
 resumes/
-secrets/
-mailer-488617-d61fbbac5bb.json
