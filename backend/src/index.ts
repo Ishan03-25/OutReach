@@ -20,6 +20,7 @@ import nodeCron from "node-cron";
 import dotenv from "dotenv";
 import { getPublicUrl } from "./supaBase/bucket/getUrl";
 import { sendMail } from "./Mail/send";
+import { getGoogleSheetsClient } from "./sheets/outreachSheet";
 dotenv.config();
 // import { startWatchGmail } from './Mail/watch';
 
@@ -28,7 +29,7 @@ const port = 3000;
 
 app.use(express.json());
 
-nodeCron.schedule("0 49 01 * * 1-5", async () => {
+nodeCron.schedule("0 31 03 * * 1-5", async () => {
   const filePath = process.env.SUPABASE_FILE_PATH;
   if (!filePath) {
     throw new Error("File path not found in environment variables");
@@ -54,33 +55,54 @@ nodeCron.schedule("0 49 01 * * 1-5", async () => {
       emails_from.push({email, refreshToken});
     }
     console.log("Emails from which mails will be sent: ", emails_from);
-    let emails_to: string[] = [];
+    const sheet = await getGoogleSheetsClient();
+    if (!process.env.GOOGLE_SPREADSHEET_ID) {
+      throw new Error("Google Spreadsheet ID not found in environment variables");
+    }
+    const res = await sheet.spreadsheets.values.get({
+      spreadsheetId: process.env.GOOGLE_SPREADSHEET_ID,
+      range: "Leads!A2:F"
+    })
+    const rows = res.data.values;
+    if (!rows) console.log("No data found in spreadsheet");
+    console.log("Data from spreadsheet: ", rows);
     for (let i = 0; i < emails_from.length; i++) {
-      for (let j = emails_from.length - 1; j >= 0; j--) {
+      let emails_to: {email: string, rowIndex: number}[] = (rows ?? []).filter(row => row[4] === "false").map((row, index) => ({email: row[1], rowIndex: index + 2}));
+      console.log("Emails to which mails will be sent: ", emails_to);
+      for (let j = 0; j < ((emails_to.length>10) ? 10 : emails_to.length); j++) {
         if (!emails_from[i].email) {
           console.log(
             `GOOGLE_EMAIL_${i + 1} not found in environment variables in emails_from nested loops`,
           );
           continue;
         }
-        if (!emails_from[j].refreshToken){
+        if (!emails_from[i].refreshToken){
           console.log(
             `GOOGLE_REFRESH_TOKEN_${j + 1} not found in environment variables in emails_from nested loops`,
           );
           continue;
         }
-        // if (!emails_to[j]){
-        //   console.log(`GOOGLE_EMAIL_${j+1} not found in environment variables in emails_to nested loops`);
-        //   continue;
-        // }
+        if (!emails_to[j]){
+          console.log(`Email to ${j+1} not found in google sheet data, skipping this email`);
+          continue;
+        }
         try {
-          const res = await sendMail(cvurl, emails_from[i].email, emails_from[j].email, emails_from[i].refreshToken);
+          const res = await sendMail(cvurl, emails_from[i].email, emails_to[j].email, emails_from[i].refreshToken);
           console.log(
-            `Scheduled mail sent successfully from ${emails_from[i].email} to ${emails_from[j].email}`,
+            `Scheduled mail sent successfully from ${emails_from[i].email} to ${emails_to[j].email}`,
           );
+          const updateStatus = await sheet.spreadsheets.values.update({
+            spreadsheetId: process.env.GOOGLE_SPREADSHEET_ID!,
+            range: `Leads!E${emails_to[j].rowIndex}`,
+            valueInputOption: "RAW",
+            requestBody: {
+              values: [["true"]]
+            }
+          })
+          console.log(`Spreadsheet updated successfully for email ${emails_to[j].email} with response: `, updateStatus.data);
         } catch (error) {
           console.log(
-            `Error in sending scheduled mail from ${emails_from[i].email} to ${emails_from[j].email }: `,
+            `Error in sending scheduled mail from ${emails_from[i].email} to ${emails_to[j].email}: `,
             error,
           );
         }
