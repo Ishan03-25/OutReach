@@ -16,12 +16,31 @@
 import express from 'express';
 import { getGmailClient } from './Mail/client';
 import axios from 'axios';
+import nodeCron from 'node-cron';
+import dotenv from 'dotenv';
+import { getPublicUrl } from './supaBase/bucket/getUrl';
+import { sendMail } from './Mail/send';
+dotenv.config();
 // import { startWatchGmail } from './Mail/watch';
 
 const app = express();
 const port = 3000;
 
 app.use(express.json());
+
+nodeCron.schedule('0 58 22 * * 1-5', ()=>{
+  const filePath = process.env.SUPABASE_FILE_PATH;
+  if (!filePath){
+    throw new Error("File path not found in environment variables");
+  }
+  const cvurl = getPublicUrl(filePath);
+  try {
+    sendMail(cvurl);
+    console.log("Scheduled mail sent successfully");
+  } catch (error) {
+    console.log("Error in sending scheduled mail: ", error);
+  }
+})
 
 app.get('/', (req, res)=>{
   res.send("Hello World!");
