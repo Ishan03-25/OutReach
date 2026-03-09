@@ -7,7 +7,6 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "npx tsc -b && node dist/index.js",
     "upload": "npx tsc -b && node dist/supabase/bucket/upload.js",
     "watch": "node dist/mail/watch.js"
@@ -23,6 +22,8 @@
     "nodemailer": "^8.0.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "@types/node": "^25.3.5",
     "@types/nodemailer": "^7.0.11"
   }
 }
