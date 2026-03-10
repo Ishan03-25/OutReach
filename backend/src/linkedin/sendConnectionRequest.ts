@@ -38,18 +38,20 @@ export async function sendConnectionRequest(page: Page, profileUrl: string): Pro
 
       if (shadowHost && shadowHost.shadowRoot) {
         // Look inside the shadowRoot specifically
-        const addNoteBtn = shadowHost.shadowRoot.querySelector<HTMLElement>('button[aria-label="Add a note"]');
+        const NoteBtn = shadowHost.shadowRoot.querySelector<HTMLElement>('button[aria-label="Send without a note"]');
         
-        if (addNoteBtn) {
-          addNoteBtn.click();
-          console.log("Add a note button clicked!");
+        if (NoteBtn) {
+          NoteBtn.click();
+          console.log("Send without a note button clicked!");
         } else {
-          console.log("Add a note button not found inside Shadow Root.");
+          console.log("Send without a note button not found inside Shadow Root.");
         }
       } else {
         console.log("Shadow Host (#interop-outlet) not found. Modal might not be open.");
       }
     });
+
+    await page.waitForTimeout(2000); // Wait for the note textarea to appear
 
     return true;
   } catch (error) {

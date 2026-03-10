@@ -11,7 +11,7 @@ async function test() {
     const page = await context.newPage();
 
     // Get profiles using SearchAlumsProfiles
-    const allProfiles = await SearchAlumsProfiles(page, "Netflix");
+    const allProfiles = await SearchAlumsProfiles(page, "Flipkart");
 
     // Iterate through each role's profiles and send connection requests
     for (const roleData of allProfiles) {
