@@ -10,7 +10,7 @@ async function test(){
 
     const page = await context.newPage();
 
-    const profiles = await SearchAlumsProfiles(page, "Swiggy");
+    const profiles = await SearchAlumsProfiles(page, "Zomato");
 
     // console.log("Profiles found:", profiles);
 
